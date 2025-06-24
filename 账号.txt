@@ -1,0 +1,3 @@
+Linux的Mysql密码Root@123456
+账户 demo
+密码 123456

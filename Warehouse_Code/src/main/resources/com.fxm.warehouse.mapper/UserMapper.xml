@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fxm.warehouse.mapper.UserMapper">
+<!-- 分页查询用户（支持按 username、phone、email 筛选） -->
+<select id="page" resultType="com.fxm.warehouse.pojo.entity.User">
+    SELECT * FROM user
+    <where>
+        <if test="username != null and username != ''">
+            AND username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        <if test="phone != null and phone != ''">
+            AND phone LIKE CONCAT('%', #{phone}, '%')
+        </if>
+        <if test="email != null and email != ''">
+            AND email LIKE CONCAT('%', #{email}, '%')
+        </if>
+        <if test="role != null and role != ''">
+            AND role LIKE CONCAT('%', #{role}, '%')
+        </if>
+    </where>
+</select>
+
+    <!-- 根据 ID 查询用户 -->
+    <select id="findById" resultType="com.fxm.warehouse.pojo.entity.User">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <!-- 插入或更新用户 -->
+    <update id="save" parameterType="com.fxm.warehouse.pojo.entity.User">
+        UPDATE user
+        SET username = #{username}, email = #{email}, role = #{role}, phone = #{phone}, password = #{password}
+        WHERE id = #{id}
+    </update>
+
+
+    <!-- 批量查询用户 -->
+    <select id="findAllById" resultType="com.fxm.warehouse.pojo.entity.User">
+        SELECT * FROM user WHERE id IN
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- 批量删除用户 -->
+    <delete id="deleteAll" parameterType="java.util.List">
+        DELETE FROM user WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+
+
+
+</mapper>

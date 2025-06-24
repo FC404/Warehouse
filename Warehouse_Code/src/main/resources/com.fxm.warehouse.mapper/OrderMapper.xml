@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fxm.warehouse.mapper.OrderMapper">
+
+    <!-- 分页查询订单 -->
+    <select id="page" parameterType="com.fxm.warehouse.pojo.entity.Order"
+            resultType="com.fxm.warehouse.pojo.entity.Order">
+        SELECT * FROM `order`
+        WHERE 1=1
+        <!-- 根据订单号、客户、客户料号和本厂料号进行搜索 -->
+        <if test="orderNumber != null and orderNumber.trim() != ''">
+            AND orderNumber LIKE CONCAT('%', #{orderNumber}, '%')
+        </if>
+        <if test="customer != null and customer.trim() != ''">
+            AND customer LIKE CONCAT('%', #{customer}, '%')
+        </if>
+        <if test="customerPartNumber != null and customerPartNumber.trim() != ''">
+            AND customerPartNumber LIKE CONCAT('%', #{customerPartNumber}, '%')
+        </if>
+        <if test="factoryPartNumber != null and factoryPartNumber.trim() != ''">
+            AND factoryPartNumber LIKE CONCAT('%', #{factoryPartNumber}, '%')
+        </if>
+        <if test="productName != null and productName.trim() != ''">
+            AND productName LIKE CONCAT('%', #{productName}, '%')
+        </if>
+        <!-- 根据状态进行筛选 -->
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="orderDate != null">
+            AND DATE(orderDate) = #{orderDate}
+        </if>
+        <if test="deliveryDate != null">
+            AND DATE(deliveryDate) = #{deliveryDate}
+        </if>
+
+        <!-- 排序：按状态排序 -->
+        ORDER BY
+        CASE
+        WHEN status = 1 THEN 0 -- "待处理" 排在前面
+        WHEN status = 3 THEN 2 -- "已送达" 排在最后
+        ELSE 1 -- 其他状态的排在中间
+        END,
+        DATEDIFF(CURDATE(), orderDate) ASC, -- 距离今天最近的订单排在前面
+        id DESC -- 按 id 降序排列
+    </select>
+
+    <insert id="add" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO warehouse.`order`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customer != null">customer,</if>
+            <if test="orderNumber != null">orderNumber,</if>
+            <if test="orderDate != null">orderDate,</if>
+            <if test="deliveryDate != null">deliveryDate,</if>
+            <if test="customerPartNumber != null">customerPartNumber,</if>
+            <if test="factoryPartNumber != null">factoryPartNumber,</if>
+            <if test="orderQuantity != null">orderQuantity,</if>
+            <if test="deliveredQuantity != null">deliveredQuantity,</if>
+            <if test="status != null">status,</if>
+            <if test="remarks != null">remarks,</if>
+            <if test="productName != null">productName,</if>
+            <if test="materialProgress != null">materialProgress,</if>
+            <if test="materialPreparationProgress != null">materialPreparationProgress,</if>
+            <if test="installationProgress != null">installationProgress,</if>
+            <if test="materialshortagedetails != null">materialshortagedetails,</if>
+            <if test="outsourcing != null">outsourcing,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="customer != null">#{customer},</if>
+            <if test="orderNumber != null">#{orderNumber},</if>
+            <if test="orderDate != null">#{orderDate},</if>
+            <if test="deliveryDate != null">#{deliveryDate},</if>
+            <if test="customerPartNumber != null">#{customerPartNumber},</if>
+            <if test="factoryPartNumber != null">#{factoryPartNumber},</if>
+            <if test="orderQuantity != null">#{orderQuantity},</if>
+            <if test="deliveredQuantity != null">#{deliveredQuantity},</if>
+            <if test="status != null">#{status},</if>
+            <if test="remarks != null">#{remarks},</if>
+            <if test="productName != null">#{productName},</if>
+            <if test="materialProgress != null">#{materialProgress},</if>
+            <if test="materialPreparationProgress != null">#{materialPreparationProgress},</if>
+            <if test="installationProgress != null">#{installationProgress},</if>
+            <if test="materialshortagedetails != null">#{materialshortagedetails},</if>
+            <if test="outsourcing != null">#{outsourcing},</if>
+        </trim>
+    </insert>
+
+
+
+    <!-- 批量删除订单 -->
+    <delete id="deleteBatch">
+        DELETE FROM `order` WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据订单号查找订单 -->
+    <select id="findByOrderNumber" resultType="com.fxm.warehouse.pojo.entity.Order">
+        SELECT *
+        FROM `order`
+        WHERE orderNumber = #{orderNumber}
+    </select>
+
+    <select id="findOrdersByIds" resultType="com.fxm.warehouse.pojo.entity.Order">
+        SELECT *
+        FROM `order`
+        WHERE id IN
+        <foreach collection="orderIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+    <select id="getCustomer" resultType="java.lang.String">
+        SELECT DISTINCT customer FROM `order`
+    </select>
+
+    <!-- Mapper XML -->
+    <select id="countOrdersBetween" resultType="map">
+        SELECT DATE(orderdate) AS date, COUNT(*) AS count
+        FROM `order`
+        WHERE orderdate BETWEEN #{startDate} AND #{endDate}
+        GROUP BY DATE(orderdate)
+    </select>
+
+
+
+</mapper>

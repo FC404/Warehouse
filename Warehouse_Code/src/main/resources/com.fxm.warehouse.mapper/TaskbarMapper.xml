@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fxm.warehouse.mapper.TaskbarMapper">
+    <select id="page" parameterType="map" resultType="com.fxm.warehouse.pojo.entity.Taskbar">
+        SELECT * FROM `taskbar`
+        WHERE 1=1
+        <if test="taskname != null and taskname.trim() != ''">
+            AND taskname LIKE CONCAT('%', #{taskname}, '%')
+        </if>
+        <if test="status != null and status.trim() != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY
+        CASE
+        WHEN status = '未完成' THEN 0
+        WHEN status = '完成' THEN 1
+        ELSE 2
+        END,
+        id DESC
+    </select>
+
+
+    <!-- 通过 ID 获取任务 -->
+    <select id="getTaskById" resultType="com.fxm.warehouse.pojo.entity.Taskbar">
+        SELECT * FROM taskbar WHERE id = #{id}
+    </select>
+
+    <!-- 添加任务 -->
+    <insert id="addTask">
+        INSERT INTO taskbar (taskname, status) VALUES (#{taskname}, #{status})
+    </insert>
+
+    <!-- 更新任务 -->
+    <update id="updateTask">
+        UPDATE taskbar
+        SET taskname = #{taskname}, status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除任务 -->
+    <delete id="deleteTasks">
+        DELETE FROM taskbar WHERE id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

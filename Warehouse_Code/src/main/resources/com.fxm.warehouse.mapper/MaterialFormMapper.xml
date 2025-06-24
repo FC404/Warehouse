@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fxm.warehouse.mapper.MaterialFormMapper">
+
+    <select id="page" resultType="com.fxm.warehouse.pojo.entity.MaterialForm">
+        SELECT *
+        FROM material_form
+        <where>
+            <if test="customer != null and customer != ''">
+                AND customer LIKE CONCAT('%', #{customer}, '%')
+            </if>
+            <if test="parentPartNumber != null and parentPartNumber != ''">
+                AND parent_part_number LIKE CONCAT('%', #{parentPartNumber}, '%')
+            </if>
+            <if test="copperMaterialNumber != null and copperMaterialNumber != ''">
+                AND copper_material_number LIKE CONCAT('%', #{copperMaterialNumber}, '%')
+            </if>
+            <if test="childPartNumber != null and childPartNumber != ''">
+                AND child_part_number LIKE CONCAT('%', #{childPartNumber}, '%')
+            </if>
+            <if test="materialSpecification != null and materialSpecification != ''">
+                AND material_specification LIKE CONCAT('%', #{materialSpecification}, '%')
+            </if>
+            <if test="manufacturingType != null and manufacturingType != ''">
+                AND manufacturing_type = #{manufacturingType}
+            </if>
+            <!-- 精确查询材质 -->
+            <if test="materialType != null and materialType != ''">
+                AND material_type = #{materialType}
+            </if>
+            <!-- 精确查询订单状态 -->
+            <if test="orderStatus != null and orderStatus != ''">
+                AND order_status = #{orderStatus}
+            </if>
+
+
+            <if test="feedingDate != null">
+                AND DATE(feeding_date) = #{feedingDate}
+            </if>
+            <if test="machiningDeliveryDate != null">
+                AND DATE(machining_delivery_date) = #{machiningDeliveryDate}
+            </if>
+            <if test="orderDate != null">
+                AND DATE(order_date) = #{orderDate}
+            </if>
+            <if test="onlineDate != null">
+                AND DATE(online_date) = #{onlineDate}
+            </if>
+
+        </where>
+
+        <!-- 排序：将 "未完成" 状态置顶，将 "完成" 状态置底 -->
+        ORDER BY
+        CASE
+        WHEN order_status = '未完成' THEN 0  <!-- 将 "未完成" 排在最前面 -->
+        WHEN order_status = '完成' THEN 2   <!-- 将 "完成" 排在最后 -->
+        ELSE 1                               <!-- 其他状态排在中间 -->
+        END
+    </select>
+
+
+
+
+    <update id="update" parameterType="com.fxm.warehouse.pojo.entity.MaterialForm">
+        UPDATE material_form
+        SET
+            customer = #{customer},
+            parent_part_number = #{parentPartNumber},
+            copper_material_number = #{copperMaterialNumber},
+            child_part_number = #{childPartNumber},
+            material_specification = #{materialSpecification},
+            material_type = #{materialType},
+            quantity = #{quantity},
+            copper_quantity = #{copperQuantity},
+            order_quantity = #{orderQuantity},
+            planned_quantity = #{plannedQuantity},
+            feeding_date = #{feedingDate},
+            machining_delivery_date = #{machiningDeliveryDate},
+            manufacturing_type = #{manufacturingType},
+            order_date = #{orderDate},
+            online_date = #{onlineDate},
+            order_status = #{orderStatus},
+            remarks = #{remarks}
+        WHERE id = #{id};
+    </update>
+
+    <!-- 批量删除订单 -->
+    <delete id="deleteBatch">
+        DELETE FROM `material_form` WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findMaterialFormByIds" resultType="com.fxm.warehouse.pojo.entity.MaterialForm">
+        SELECT *
+        FROM `material_form`
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+
+
+</mapper>

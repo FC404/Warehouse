@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver   # 推荐新版驱动
+    url: jdbc:mysql://192.168.200.129:3306/warehouse?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: root
+    password: Root@123456
+    type: com.alibaba.druid.pool.DruidDataSource
+  data:
+    redis:
+      host: 192.168.200.129
+      port: 6379
+
+server:
+  port: 8081  # 或者你想指定的端口
+  address: 0.0.0.0       # 监听所有网卡，保证外网能访问
+
+mybatis:
+  mapper-locations: com.fxm.warehouse.mapper/*.xml  # 扫描所有 mapper 文件
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+jwt:
+  secret: fxm  # 这里的密钥应该是非空的字符串
+  expire: 43200000  # 设置 JWT 的过期时间（单位是毫秒）

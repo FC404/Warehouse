@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fxm.warehouse.mapper.OutsourcingDeliveryMapper">
+
+    <!-- 分页查询 -->
+    <select id="page" parameterType="com.fxm.warehouse.pojo.entity.OutsourcingDelivery" resultType="com.fxm.warehouse.pojo.entity.OutsourcingDelivery">
+        SELECT
+        id,
+        supplier,
+        product_code AS productCode,
+        product_name AS productName,
+        outsource_quantity AS outsourceQuantity,
+        outsource_date AS outsourceDate,
+        planned_completion_date AS plannedCompletionDate,
+        is_online AS isOnline,
+        return_date AS returnDate,
+        good_quantity AS goodQuantity,
+        remarks
+        FROM outsourcing_delivery
+        <where>
+            <if test="supplier != null and supplier != ''">
+                AND supplier LIKE CONCAT('%', #{supplier}, '%')
+            </if>
+            <if test="productCode != null and productCode != ''">
+                AND product_code LIKE CONCAT('%', #{productCode}, '%')
+            </if>
+            <if test="productName != null and productName != ''">
+                AND product_name LIKE CONCAT('%', #{productName}, '%')
+            </if>
+            <if test="isOnline != null and isOnline != ''">
+                AND is_online = #{isOnline}
+            </if>
+            <if test="outsourceDate != null ">
+                AND DATE(outsource_date) = #{outsourceDate}
+            </if>
+
+            <if test="plannedCompletionDate != null ">
+                AND DATE(planned_completion_date) = #{plannedCompletionDate}
+            </if>
+            <if test="returnDate != null">
+                AND DATE(return_date) = #{returnDate}
+            </if>
+        </where>
+        <!-- 排序规则：未上线的排在前面，上线的排在底部 -->
+        ORDER BY
+        is_online DESC,  <!-- 排序：未上线的在前，上线的在后 -->
+        outsource_date DESC  <!-- 最新的订单排在前面 -->
+    </select>
+
+
+
+    <update id="updateById" parameterType="com.fxm.warehouse.pojo.entity.OutsourcingDelivery">
+        UPDATE warehouse.outsourcing_delivery
+        <set>
+            <if test="supplier != null">supplier = #{supplier},</if>
+            <if test="productCode != null">product_code = #{productCode},</if>
+            <if test="productName != null">product_name = #{productName},</if>
+            <if test="outsourceQuantity >= 0">outsource_quantity = #{outsourceQuantity},</if>
+            <if test="outsourceDate != null">outsource_date = #{outsourceDate},</if>
+            <if test="plannedCompletionDate != null">planned_completion_date = #{plannedCompletionDate},</if>
+            <if test="isOnline != null">is_online = #{isOnline},</if>
+            <if test="returnDate != null">return_date = #{returnDate},</if>
+            <if test="goodQuantity >= 0">good_quantity = #{goodQuantity},</if>
+            <if test="remarks != null">remarks = #{remarks},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insert" parameterType="com.fxm.warehouse.pojo.entity.OutsourcingDelivery">
+        INSERT INTO warehouse.outsourcing_delivery (supplier, product_code, product_name, outsource_quantity, outsource_date,
+                                                    planned_completion_date, is_online, return_date, good_quantity, remarks)
+        VALUES (#{supplier}, #{productCode}, #{productName}, #{outsourceQuantity}, #{outsourceDate},
+                #{plannedCompletionDate}, #{isOnline}, #{returnDate}, #{goodQuantity}, #{remarks})
+    </insert>
+
+
+
+
+    <!-- 批量删除记录 -->
+    <delete id="deleteBatchIds">
+        DELETE FROM outsourcing_delivery
+        WHERE id IN
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findOutsourcingDeliveryByIds" resultType="com.fxm.warehouse.pojo.entity.OutsourcingDelivery">
+        SELECT *
+        FROM outsourcing_delivery
+        WHERE id IN
+        <foreach collection="Ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+
+</mapper>
