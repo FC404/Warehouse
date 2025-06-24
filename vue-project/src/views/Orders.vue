@@ -124,24 +124,25 @@
                     {{ formatQuantityDifference((row.orderQuantity || 0) - (row.deliveredQuantity || 0)) }}
                 </template>
             </el-table-column>
-            <el-table-column prop="materialProgress" label="投料进度" width="100">
+            <el-table-column prop="materialProgress" label="投料进度" width="110">
                 <template #default="{ row }">
                     <el-tag :type="getProgressTagType(row.materialProgress)">{{ row.materialProgress }}</el-tag>
                 </template>
             </el-table-column>
-            <el-table-column prop="materialPreparationProgress" label="备料进度" width="100">
+            <el-table-column prop="materialPreparationProgress" label="备料进度" width="110">
                 <template #default="{ row }">
                     <el-tag :type="getProgressTagType(row.materialPreparationProgress)">{{
                         row.materialPreparationProgress }}</el-tag>
                 </template>
             </el-table-column>
-            <el-table-column prop="materialPreparationProgress" label="外发进度" width="100">
+            <el-table-column prop="outsourcing" label="外发进度" width="110">
                 <template #default="{ row }">
-                    <el-tag :type="getProgressTagType(row.outsourcing)">{{
-                        row.outsourcing }}</el-tag>
+                    <el-button link @click.stop="showRemarkDialog(row.outsourcing, 'outsourcing', row)">
+                        {{ row.outsourcing || '暂无' }}
+                    </el-button>
                 </template>
             </el-table-column>
-            <el-table-column prop="remarks" label="欠料明细" width="100">
+            <el-table-column prop="remarks" label="欠料明细" width="110">
                 <template #default="{ row }">
                     <el-button link
                         @click.stop="showRemarkDialog(row.materialshortagedetails, 'materialshortagedetails', row)">
@@ -150,21 +151,21 @@
                 </template>
             </el-table-column>
 
-            <el-table-column prop="installationProgress" label="安装进度" width="100">
+            <el-table-column prop="installationProgress" label="安装进度" width="110">
                 <template #default="{ row }">
                     <el-tag :type="getProgressTagType(row.installationProgress)">{{ row.installationProgress
-                        }}</el-tag>
+                    }}</el-tag>
                 </template>
             </el-table-column>
 
             <!-- 状态列 -->
-            <el-table-column prop="status" label="状态" width="100" fixed="right">
+            <el-table-column prop="status" label="状态" width="110" fixed="right">
                 <template #default="{ row }">
                     <el-tag :type="getStatusTagType(row.status)">{{ row.status }}</el-tag>
                 </template>
             </el-table-column>
 
-            <el-table-column prop="remarks" label="备注" width="100">
+            <el-table-column prop="remarks" label="备注" width="110">
                 <template #default="{ row }">
                     <el-button link @click.stop="showRemarkDialog(row.remarks, 'remarks', row)">
                         {{ row.remarks || '暂无备注' }}
@@ -279,17 +280,14 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item label="外发进度">
-                            <el-select v-model="editingOrder.outsourcing">
-                                <el-option label="待外发" value="待外发" />
-                                <el-option label="已外发" value="已外发" />
-                            </el-select>
+                            <el-input v-model="editingOrder.outsourcing" type="textarea" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="欠料明细">
                             <el-input v-model="editingOrder.materialshortagedetails" type="textarea" />
                         </el-form-item>
-                        
+
                         <el-form-item label="备注">
                             <el-input v-model="editingOrder.remarks" type="textarea" />
                         </el-form-item>
@@ -477,7 +475,7 @@ const addNewOrder = () => {
         materialshortagedetailsL: '',
         installationProgress: '待上线',  // 新增字段：安装进度
         remarks: '',
-        outsourcing:"待外发"
+        outsourcing: ""
     }
     dialogVisible.value = true
     // 重新加载数据
@@ -485,26 +483,26 @@ const addNewOrder = () => {
 }
 
 function toLocalDateString(val) {
-  if (!val) return '';
+    if (!val) return '';
 
-  // 如果已经是 YYYY-MM-DD 字符串，直接返回
-  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+    // 如果已经是 YYYY-MM-DD 字符串，直接返回
+    if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
 
-  // 如果是 ISO 字符串，先 new Date，再加上时区偏移
-  if (typeof val === 'string' && val.includes('T')) {
-    const d = new Date(val);
-    if (!isNaN(d)) {
-      const local = new Date(d.getTime() + d.getTimezoneOffset() * 60000); // 加上本地偏移
-      return `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, '0')}-${String(local.getDate()).padStart(2, '0')}`;
+    // 如果是 ISO 字符串，先 new Date，再加上时区偏移
+    if (typeof val === 'string' && val.includes('T')) {
+        const d = new Date(val);
+        if (!isNaN(d)) {
+            const local = new Date(d.getTime() + d.getTimezoneOffset() * 60000); // 加上本地偏移
+            return `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, '0')}-${String(local.getDate()).padStart(2, '0')}`;
+        }
     }
-  }
 
-  // 如果是 Date 对象
-  if (val instanceof Date) {
-    return `${val.getFullYear()}-${String(val.getMonth() + 1).padStart(2, '0')}-${String(val.getDate()).padStart(2, '0')}`;
-  }
+    // 如果是 Date 对象
+    if (val instanceof Date) {
+        return `${val.getFullYear()}-${String(val.getMonth() + 1).padStart(2, '0')}-${String(val.getDate()).padStart(2, '0')}`;
+    }
 
-  return '';
+    return '';
 }
 
 // 编辑订单
